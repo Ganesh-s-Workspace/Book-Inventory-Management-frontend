@@ -10,52 +10,29 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    permissions:
-      id-token: write
-      contents: read
-
     steps:
-      - name: Checkout code
+      # 1. Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      # 2. Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
+      # 3. Install dependencies
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Build React app
+      # 4. Build React app
+      - name: Build project
         run: npm run build
 
-      - name: Validate Azure deployment credentials
-        run: |
-          if [ -z "${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}" ] && [ -z "${{ secrets.AZURE_CREDENTIALS }}" ]; then
-            echo "Missing Azure credentials. Set AZURE_WEBAPP_PUBLISH_PROFILE or AZURE_CREDENTIALS in repository secrets."
-            exit 1
-          fi
-
-      # Login only if using service principal
-      - name: Azure Login (Service Principal)
-        if: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE == '' && secrets.AZURE_CREDENTIALS != '' }}
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      # Deploy using Publish Profile
-      - name: Deploy to Azure Web App (Publish Profile)
-        if: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE != '' }}
+      # 5. Deploy to Azure Web App
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: book-inventory-frontend
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./build
-
-      # Deploy using Azure Login
-      - name: Deploy to Azure Web App (Azure Login)
-        if: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE == '' && secrets.AZURE_CREDENTIALS != '' }}
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: book-inventory-frontend
           package: ./build
