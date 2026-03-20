@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 
 const API_BASE_URLS = [
@@ -90,17 +90,7 @@ function App() {
   const activeFilters =
     (searchTerm.trim() ? 1 : 0) + (genreFilter !== 'all' ? 1 : 0) + (sortBy ? 1 : 0);
 
-  useEffect(() => {
-    loadBooks();
-  }, []);
-
-  useEffect(() => {
-    if (activePage === 'manage' && titleInputRef.current) {
-      titleInputRef.current.focus();
-    }
-  }, [activePage]);
-
-  const fetchWithFallback = async (path = '', options = {}) => {
+  const fetchWithFallback = useCallback(async (path = '', options = {}) => {
     let lastResponse = null;
     let lastError = null;
 
@@ -126,9 +116,9 @@ function App() {
     }
 
     throw lastError || new Error('Unable to reach the API.');
-  };
+  }, []);
 
-  const loadBooks = async () => {
+  const loadBooks = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -143,7 +133,17 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchWithFallback]);
+
+  useEffect(() => {
+    loadBooks();
+  }, [loadBooks]);
+
+  useEffect(() => {
+    if (activePage === 'manage' && titleInputRef.current) {
+      titleInputRef.current.focus();
+    }
+  }, [activePage]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
