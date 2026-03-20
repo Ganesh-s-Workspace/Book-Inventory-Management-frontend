@@ -1,7 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 
-const API_URL = 'http://localhost:8080/api/books';
+const PRIMARY_API_URL = 'https://booking-backend-bqfrbyeeaactgegx.southeastasia-01.azurewebsites.net/api/books';
+const FALLBACK_API_URL = 'http://localhost:8080/api/books';
+
+const requestApi = async (path = '', options = {}) => {
+  const endpoints = [PRIMARY_API_URL, FALLBACK_API_URL];
+  let lastError = null;
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(`${endpoint}${path}`, options);
+
+      // Fallback only when the primary endpoint appears unavailable.
+      if (endpoint === PRIMARY_API_URL && response.status >= 500) {
+        continue;
+      }
+
+      return response;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error('Unable to reach any API endpoint.');
+};
 
 const emptyForm = {
   id: null,
@@ -101,7 +124,7 @@ function App() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(API_URL);
+      const response = await requestApi();
       if (!response.ok) {
         throw new Error('Failed to load books.');
       }
@@ -138,8 +161,8 @@ function App() {
     }
 
     try {
-      const response = await fetch(
-        isEditing ? `${API_URL}/${form.id}` : API_URL,
+      const response = await requestApi(
+        isEditing ? `/${form.id}` : '',
         {
           method: isEditing ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -183,7 +206,7 @@ function App() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      const response = await requestApi(`/${id}`, { method: 'DELETE' });
       if (!response.ok) {
         throw new Error('Unable to delete the book.');
       }
