@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 
-const API_BASE_URLS = [
-  'https://booking-backend-bqfrbyeeaactgegx.southeastasia-01.azurewebsites.net/api/books',
-  'http://localhost:8080/api/books',
-];
+const AZURE_API_URL =
+  'https://booking-backend-bqfrbyeeaactgegx.southeastasia-01.azurewebsites.net/api/books';
+const LOCAL_API_URL = 'http://localhost:8080/api/books';
+const isLocalFrontend =
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE_URLS = isLocalFrontend ? [AZURE_API_URL, LOCAL_API_URL] : [AZURE_API_URL];
 
 const emptyForm = {
   id: null,
