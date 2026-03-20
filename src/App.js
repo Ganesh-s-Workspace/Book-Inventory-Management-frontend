@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 
-const API_URL = 'http://localhost:8080/api/books';
+const API_BASE_URLS = [
+  'https://booking-backend-bqfrbyeeaactgegx.southeastasia-01.azurewebsites.net/api/books',
+  'http://localhost:8080/api/books',
+];
 
 const emptyForm = {
   id: null,
@@ -97,11 +100,39 @@ function App() {
     }
   }, [activePage]);
 
+  const fetchWithFallback = async (path = '', options = {}) => {
+    let lastResponse = null;
+    let lastError = null;
+
+    for (const baseUrl of API_BASE_URLS) {
+      try {
+        const response = await fetch(`${baseUrl}${path}`, options);
+        if (response.ok) {
+          return response;
+        }
+
+        lastResponse = response;
+
+        if (response.status < 500) {
+          return response;
+        }
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    if (lastResponse) {
+      return lastResponse;
+    }
+
+    throw lastError || new Error('Unable to reach the API.');
+  };
+
   const loadBooks = async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(API_URL);
+      const response = await fetchWithFallback();
       if (!response.ok) {
         throw new Error('Failed to load books.');
       }
@@ -138,8 +169,8 @@ function App() {
     }
 
     try {
-      const response = await fetch(
-        isEditing ? `${API_URL}/${form.id}` : API_URL,
+      const response = await fetchWithFallback(
+        isEditing ? `/${form.id}` : '',
         {
           method: isEditing ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -183,7 +214,7 @@ function App() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      const response = await fetchWithFallback(`/${id}`, { method: 'DELETE' });
       if (!response.ok) {
         throw new Error('Unable to delete the book.');
       }
