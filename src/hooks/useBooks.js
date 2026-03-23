@@ -179,7 +179,8 @@ export const useBooks = (titleInputRef) => {
     }
   };
 
-  const handleDelete = async (id) => {
+ 
+   const handleDelete = async (id) => {
     const confirmed = window.confirm('Remove this book from inventory?');
     if (!confirmed) {
       return;
@@ -195,10 +196,7 @@ export const useBooks = (titleInputRef) => {
       setError(err.message || 'Something went wrong.');
     }
   };
-  
-  }; 
 
-  };
   const handleResetFilters = () => {
     setSearchTerm('');
     setGenreFilter('all');
