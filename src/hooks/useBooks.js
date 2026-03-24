@@ -179,10 +179,15 @@ export const useBooks = (titleInputRef) => {
     }
   };
 
- 
-   const handleDelete = async (id) => {
+ const handleDelete = async (id) => {
     const confirmed = window.confirm('Remove this book from inventory?');
     if (!confirmed) {
+      return;
+    }
+
+    const password = window.prompt('Enter password to delete:');
+    if (password !== '2006') {
+      window.alert('Incorrect password. Delete cancelled.');
       return;
     }
 
@@ -195,6 +200,8 @@ export const useBooks = (titleInputRef) => {
     } catch (err) {
       setError(err.message || 'Something went wrong.');
     }
+  };
+  
   };
 
   const handleResetFilters = () => {
