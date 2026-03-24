@@ -179,31 +179,21 @@ export const useBooks = (titleInputRef) => {
     }
   };
 const handleDelete = async (id) => {
-  const confirmed = window.confirm("Remove this book from inventory?");
-  
-  if (!confirmed) return;
-
-  const password = window.prompt("Enter password to delete:");
-
-  if (password !== "2006") {
-    window.alert("Incorrect password. Delete cancelled.");
-    return;
-  }
-
-  try {
-    const response = await fetchWithFallback(`/${id}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      throw new Error("Unable to delete the book.");
+    const confirmed = window.confirm('Remove this book from inventory?');
+    if (!confirmed) {
+      return;
     }
 
-    await loadBooks();
-  } catch (err) {
-    setError(err.message || "Something went wrong.");
-  }
-};
+    try {
+      const response = await fetchWithFallback(`/${id}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Unable to delete the book.');
+      }
+      await loadBooks();
+    } catch (err) {
+      setError(err.message || 'Something went wrong.');
+    }
+  };
   const handleResetFilters = () => {
     setSearchTerm('');
     setGenreFilter('all');
