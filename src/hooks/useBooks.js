@@ -178,26 +178,22 @@ export const useBooks = (titleInputRef) => {
       titleInputRef.current.focus();
     }
   };
-
 const handleDelete = async (id) => {
-  const confirmed = window.confirm('Remove this book from inventory?');
-  if (!confirmed) return;
-
-  try {
-    const response = await fetchWithFallback(`/books/${id}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.message || 'Unable to delete the book.');
+    const confirmed = window.confirm('Remove this book from inventory?');
+    if (!confirmed) {
+      return;
     }
 
-    await loadBooks();
-  } catch (err) {
-    setError(err.message || 'Something went wrong.');
-  }
-};
+    try {
+      const response = await fetchWithFallback(`/${id}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Unable to delete the book.');
+      }
+      await loadBooks();
+    } catch (err) {
+      setError(err.message || 'Something went wrong.');
+    }
+  };
 
   const handleResetFilters = () => {
     setSearchTerm('');
